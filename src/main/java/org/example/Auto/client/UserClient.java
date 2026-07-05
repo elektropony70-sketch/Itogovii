@@ -2,12 +2,8 @@ package org.example.Auto.client;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
-import org.example.Auto.models.LogoutRequest;
-import org.example.Auto.models.PasswordReset;
-import org.example.Auto.models.TokenRequest;
 import org.example.Auto.models.User;
 
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
@@ -33,67 +29,6 @@ public class UserClient {
                 .body(user)
                 .when()
                 .post(BASE_URI + "/auth/login")
-                .then();
-    }
-
-    // 3. Восстановление пароля — Шаг 1: Запрос кода на Email (POST /api/password-reset)
-    public ValidatableResponse forgotPassword(String email) {
-        return given()
-                .contentType(ContentType.JSON)
-                .body(Map.of("email", email))
-                .when()
-                .post(BASE_URI + "/password-reset")
-                .then();
-    }
-
-    // 4. Восстановление пароля — Шаг 2: Ввод нового пароля и токена (POST /api/password-reset/reset)
-    public ValidatableResponse resetPassword(PasswordReset passwordReset) {
-        return given()
-                .contentType(ContentType.JSON)
-                .body(passwordReset)
-                .when()
-                .post(BASE_URI + "/password-reset/reset")
-                .then();
-    }
-
-    // 5. Выход из системы (POST /api/auth/logout)
-    public ValidatableResponse logout(LogoutRequest logoutRequest) {
-        return given()
-                .contentType(ContentType.JSON)
-                .body(logoutRequest)
-                .when()
-                .post(BASE_URI + "/auth/logout")
-                .then();
-    }
-
-    // 6. Обновление токена (POST /api/auth/token)
-    public ValidatableResponse refreshToken(TokenRequest tokenRequest) {
-        return given()
-                .contentType(ContentType.JSON)
-                .body(tokenRequest)
-                .when()
-                .post(BASE_URI + "/auth/token")
-                .then();
-    }
-
-    // 7. Получение информации о пользователе (GET /api/auth/user)
-    public ValidatableResponse getUserData(String accessToken) {
-        return given()
-                .header("Authorization", accessToken)
-                .contentType(ContentType.JSON)
-                .when()
-                .get(BASE_URI + "/auth/user") // Исправлено строго на GET согласно документации
-                .then();
-    }
-
-    // 8. Изменение информации о пользователе (PATCH /api/auth/user)
-    public ValidatableResponse updateUserData(User user, String accessToken) {
-        return given()
-                .header("Authorization", accessToken)
-                .contentType(ContentType.JSON)
-                .body(user)
-                .when()
-                .patch(BASE_URI + "/auth/user") // Исправлено строго на PATCH согласно документации
                 .then();
     }
 

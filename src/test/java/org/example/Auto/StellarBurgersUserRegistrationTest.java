@@ -25,13 +25,14 @@ public class StellarBurgersUserRegistrationTest {
 
     @Before
     public void setUp() {
-        // Использование UUID исключает совпадение времени при быстром запуске тестов
+        // Уникальный email через UUID
         uniqueEmail = "user_" + UUID.randomUUID().toString().substring(0, 8) + "@yandex.ru";
-        accessToken = null; // Сбрасываем токен перед каждым тестом
+        accessToken = null;
     }
 
     @After
     public void tearDown() {
+        // Зачистка данных после каждого теста
         if (accessToken != null) {
             userClient.delete(accessToken);
         }
@@ -59,10 +60,10 @@ public class StellarBurgersUserRegistrationTest {
         User firstUser = new User(uniqueEmail, password, name);
         ValidatableResponse firstResponse = userClient.register(firstUser);
 
-        // Обязательно сохраняем токен первого, чтобы удалить его в tearDown()
+        // Сохраняем токен первого пользователя для удаления в tearDown
         accessToken = firstResponse.extract().path("accessToken");
 
-        // Пытаемся зарегистрировать дубликат
+        // Попытка дублирования
         User duplicateUser = new User(uniqueEmail, password, name);
         userClient.register(duplicateUser)
                 .statusCode(403)
@@ -70,10 +71,10 @@ public class StellarBurgersUserRegistrationTest {
                 .body("message", equalTo("User already exists"));
     }
 
-    // 3. СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ БЕЗ ОБЯЗАТЕЛЬНОГО ПОЛЯ (Передаем null вместо "")
+    // 3. СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ БЕЗ ОБЯЗАТЕЛЬНОГО ПОЛЯ
     @Test
     public void testCreateUserWithoutEmailThrowsError() {
-        // Передаем null, чтобы поле вообще не отправлялось в JSON (если настроен Jackson/Gson)
+        // За счет @JsonInclude в классе User, поле email просто не попадет в тело запроса
         User userWithoutEmail = new User(null, password, name);
 
         userClient.register(userWithoutEmail)
