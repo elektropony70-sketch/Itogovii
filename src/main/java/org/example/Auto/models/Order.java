@@ -6,16 +6,13 @@ public class Order {
 
     private List<String> ingredients;
 
-    // Пустой конструктор (поможет отправить пустой JSON или десериализовать ответ)
     public Order() {
     }
 
-    // Конструктор со списком ингредиентов
     public Order(List<String> ingredients) {
         this.ingredients = ingredients;
     }
 
-    // Геттеры и сеттеры
     public List<String> getIngredients() {
         return ingredients;
     }

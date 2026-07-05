@@ -4,7 +4,6 @@ public class LogoutRequest {
 
     private String refreshToken;
 
-    // Пустой конструктор для стабильности библиотек сериализации
     public LogoutRequest() {
     }
 

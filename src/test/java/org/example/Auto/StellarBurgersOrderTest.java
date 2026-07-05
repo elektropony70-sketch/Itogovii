@@ -4,120 +4,77 @@ import io.restassured.response.ValidatableResponse;
 import org.example.Auto.client.OrderClient;
 import org.example.Auto.models.Order;
 import org.example.Auto.models.User;
-import org.example.Auto.client.UserClient;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 
-public class StellarBurgersOrderTest {
+public class StellarBurgersOrderTest extends BaseTest {
 
     private final OrderClient orderClient = new OrderClient();
-    private final UserClient userClient = new UserClient();
-
-    private String accessToken;
-
-    // Возвращаем хэши ингредиентов обратно в код, чтобы обойти падение сервера с XML/HTML
-
     private List<String> validIngredients;
 
     @Before
     public void setUp() {
-
-        // 1. Перед каждым тестом регистрируем уникального пользователя
+        // 1. Регистрируем уникального пользователя через константы класса User
         String uniqueEmail = "order_user_" + System.currentTimeMillis() + "@yandex.ru";
-        User user = new User(uniqueEmail, "password123", "OrderTester");
+        User user = new User(uniqueEmail, User.DEFAULT_PASSWORD, "OrderTester");
 
         ValidatableResponse response = userClient.register(user);
+        // Переменная accessToken унаследована из BaseTest
         accessToken = response.extract().path("accessToken");
 
-        // 2. ДИНАМИЧЕСКИ получаем только свежие и рабочие ID ингредиентов от сервера
-        List<String> allIds = io.restassured.RestAssured
-                .given()
-                .contentType(io.restassured.http.ContentType.JSON) // Явно просим JSON
-                .get("https://stellarburgers.education-services.ru/api/ingredients")
-                .then()
-                .contentType(io.restassured.http.ContentType.JSON) // Проверяем, что вернулся JSON, а не HTML-заглушка nginx
+        // 2. ДИНАМИЧЕСКИ получаем только свежие ID ингредиентов через наш OrderClient
+        List<String> allIds = orderClient.getIngredients()
+                .contentType(io.restassured.http.ContentType.JSON) // Защита от HTML-заглушек nginx
                 .extract()
                 .path("data._id");
 
-        // Берём первые два реально существующих ID ингредиента из актуальной базы данных бэкенда
+        // Берём первые два реально существующих ID ингредиента
         validIngredients = List.of(allIds.get(0), allIds.get(1));
-
-        // Выводим логи для визуального контроля в консоли
-        // System.out.println("DEBUG: Полученный accessToken = " + accessToken);
-        // System.out.println("DEBUG: Актуальные ингредиенты с сервера = " + validIngredients);
     }
 
-    @After
-    public void tearDown() {
-        // После теста удаляем пользователя для чистоты БД
-        if (accessToken != null) {
-            userClient.delete(accessToken);
-        }
-    }
-
-    // СОЗДАНИЕ ЗАКАЗА
-
+    // 1. УСПЕШНОЕ СОЗДАНИЕ ЗАКАЗА С АВТОРИЗАЦИЕЙ И ИНГРЕДИЕНТАМИ
     @Test
-    public void testCreateOrderWithAuthSuccess() {
+    public void testCreateOrderWithAuthAndIngredientsSuccess() {
         Order order = new Order(validIngredients);
 
         orderClient.createOrder(order, accessToken)
-                .log().all()
                 .statusCode(200)
+                .body("success", is(true))
                 .body("name", notNullValue())
                 .body("order.number", notNullValue());
     }
 
-    //
-
+    // 2. СОЗДАНИЕ ЗАКАЗА БЕЗ АВТОРИЗАЦИИ (Особенность бэкенда: возвращает 200)
     @Test
-    public void testCreateOrderWithoutAuthThrowsError() {
+    public void testCreateOrderWithoutAuthSuccess() {
         Order order = new Order(validIngredients);
 
-        // По факту работы бэкенда, заказ без токена успешно создаётся со статусом 200
         orderClient.createOrderWithoutAuth(order)
                 .statusCode(200)
                 .body("success", is(true))
                 .body("order.number", notNullValue());
     }
 
-    //
-
-    @Test
-    public void testCreateOrderWithIngredientsSuccess() {
-        // Создаем заказ со свежими ингредиентами, которые скачал метод @Before
-        Order order = new Order(validIngredients);
-
-        orderClient.createOrder(order, accessToken)
-                .statusCode(200)
-                .body("name", notNullValue())           // name лежит на самом верхнем уровне
-                .body("success", is(true))              // УБРАЛИ order. — теперь проверка пройдёт успешно!
-                .body("order.number", notNullValue()); // number по-прежнему лежит внутри объекта order
-    }
-
-    //
-
+    // 3. СОЗДАНИЕ ЗАКАЗА БЕЗ ИНГРЕДИЕНТОВ (400 Bad Request)
     @Test
     public void testCreateOrderWithoutIngredientsThrowsError() {
         Order emptyOrder = new Order(List.of());
 
         orderClient.createOrder(emptyOrder, accessToken)
-                .statusCode(400) // Ожидаем 400 Bad Request из ТЗ
+                .statusCode(400)
                 .body("success", is(false))
                 .body("message", equalTo("Ingredient ids must be provided"));
     }
 
-    //
-
+    // 4. СОЗДАНИЕ ЗАКАЗА С НЕВЕРНЫМ ХЕШЕМ ИНГРЕДИЕНТА (500 Internal Server Error)
     @Test
     public void testCreateOrderWithInvalidIngredientHashThrowsError() {
         Order invalidOrder = new Order(List.of("invalid_hash_12345"));
 
         orderClient.createOrder(invalidOrder, accessToken)
-                .statusCode(500); // Ожидаем 500 Internal Server Error из ТЗ
+                .statusCode(500);
     }
 }
