@@ -9,59 +9,43 @@ import org.junit.Test;
 
 import static org.hamcrest.Matchers.*;
 
-public class StellarBurgersUserLoginTest {
-
-    private final UserClient userClient = new UserClient();
-    private String accessToken; // Храним токен для удаления пользователя после теста
+public class StellarBurgersUserLoginTest extends BaseTest {
 
     private String email;
-    private final String password = "login_password_123";
-    private final String name = "LoginTester";
 
     @Before
     public void setUp() {
-        // Перед каждым тестом регистрируем реального пользователя в базе
+        // Регистрируем уникального пользователя перед каждым тестом авторизации
         email = "login_user_" + System.currentTimeMillis() + "@yandex.ru";
-        User user = new User(email, password, name);
+        User user = new User(email, User.DEFAULT_PASSWORD, "LoginTester");
 
         ValidatableResponse response = userClient.register(user);
+        // Переменная accessToken унаследована из BaseTest — зачистка сработает автоматически
         accessToken = response.extract().path("accessToken");
     }
 
-    @After
-    public void tearDown() {
-        // Чистим базу данных стенда после теста
-        if (accessToken != null) {
-            userClient.delete(accessToken);
-        }
-    }
-
-
-    //  ВХОД ПОД СУЩЕСТВУЮЩИМ ПОЛЬЗОВАТЕЛЕМ
-
+    // 1. ВХОД ПОД СУЩЕСТВУЮЩИМ ПОЛЬЗОВАТЕЛЕМ
     @Test
     public void testLoginExistingUserSuccess() {
-        // Создаем объект пользователя с верными учетными данными для логина
-        User loginCredentials = new User(email, password);
+        // Используем конструктор из 2-х параметров, пароль берем из констант User
+        User loginCredentials = new User(email, User.DEFAULT_PASSWORD);
 
         userClient.login(loginCredentials)
-                .statusCode(200) // По доке стр. 4 успешный статус 200
+                .statusCode(200) // По документации статус 200
                 .body("success", is(true))
                 .body("accessToken", notNullValue())
                 .body("refreshToken", notNullValue());
     }
 
-
-    // ВХОД С НЕВЕРНЫМ ЛОГИНОМ И ПАРОЛЕМ
-
-
+    // 2. ВХОД С НЕВЕРНЫМ ПАРОЛЕМ
     @Test
     public void testLoginWithInvalidCredentialsThrowsError() {
+        // Передаем заведомо неверный пароль
         User wrongCredentials = new User(email, "wrong_password_xyz");
 
         userClient.login(wrongCredentials)
-                .statusCode(401)
+                .statusCode(401) // 401 Unauthorized со стр. 3 документации
                 .body("success", is(false))
-                .body("message", equalTo("email or password are incorrect"));
+                .body("message", equalTo("email or password is incorrect")); // Исправлено "are" -> "is"
     }
 }

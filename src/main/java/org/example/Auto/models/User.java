@@ -2,6 +2,9 @@ package org.example.Auto.models;
 
 public class User {
 
+    public static final String DEFAULT_PASSWORD = "password123";
+    public static final String DEFAULT_NAME = "RegisterTester";
+
     private String email;
     private String password;
     private String name;
