@@ -46,6 +46,6 @@ public class StellarBurgersUserLoginTest extends BaseTest {
         userClient.login(wrongCredentials)
                 .statusCode(401) // 401 Unauthorized со стр. 3 документации
                 .body("success", is(false))
-                .body("message", equalTo("email or password is incorrect")); // Исправлено "are" -> "is"
+                .body("message", equalTo("email or password are incorrect"));
     }
 }
