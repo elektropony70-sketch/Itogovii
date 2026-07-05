@@ -28,7 +28,6 @@ public class StellarBurgersUserRegistrationTest extends BaseTest {
         accessToken = response.extract().path("accessToken");
     }
 
-    // 2 СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ ЗАРЕГЕСТРИРОВАНОГО
     @Test
     public void testCreateExistingUserThrowsError() {
         String uniqueEmail = "user_" + System.currentTimeMillis() + "@yandex.ru";
@@ -44,7 +43,6 @@ public class StellarBurgersUserRegistrationTest extends BaseTest {
                 .body("message", equalTo("User already exists"));
     }
 
-    // 3 СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ БЕЗ ОБЯЗАТЕЛЬНОГО ПОЛЯ
     @Test
     public void testCreateUserWithoutEmailThrowsError() {
         User userWithoutEmail = new User("", User.DEFAULT_PASSWORD, User.DEFAULT_NAME);
