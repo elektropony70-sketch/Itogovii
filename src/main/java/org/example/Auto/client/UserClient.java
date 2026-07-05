@@ -40,28 +40,7 @@ public class UserClient {
                 .then();
     }
 
-    // 5. Выход из системы (POST /api/auth/logout)
-    public ValidatableResponse logout(LogoutRequest logoutRequest) {
-        return given()
-                .contentType(ContentType.JSON)
-                .body(logoutRequest)
-                .when()
-                .post(BASE_URI + "/auth/logout")
-                .then();
-    }
-
-    // 8. Изменение информации о пользователе (PATCH /api/auth/user)
-    public ValidatableResponse updateUserData(User user, String accessToken) {
-        return given()
-                .header("Authorization", formatToken(accessToken)) // Защита токена
-                .contentType(ContentType.JSON)
-                .body(user)
-                .when()
-                .patch(BASE_URI + "/auth/user")
-                .then();
-    }
-
-    // 9. Удаление пользователя (DELETE /api/auth/user)
+    // 3 Удаление пользователя (DELETE /api/auth/user)
     public ValidatableResponse delete(String accessToken) {
         return given()
                 .header("Authorization", formatToken(accessToken)) // Защита токена
