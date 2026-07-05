@@ -8,10 +8,9 @@ import static io.restassured.RestAssured.given;
 
 public class OrderClient {
 
-    // Выносим общую базовую часть URL (включая /api), чтобы не дублировать её в методах
     private static final String BASE_URI = "https://stellarburgers.education-services.ru/api";
 
-    // 1. Метод для создания заказа С авторизацией
+    // 1. Создание заказа С авторизацией (POST /api/orders)
     public ValidatableResponse createOrder(Order order, String accessToken) {
         return given()
                 .header("Authorization", accessToken)
@@ -22,7 +21,7 @@ public class OrderClient {
                 .then();
     }
 
-    // 2. Метод для создания заказа БЕЗ авторизации
+    // 2. Создание заказа БЕЗ авторизации (POST /api/orders)
     public ValidatableResponse createOrderWithoutAuth(Order order) {
         return given()
                 .contentType(ContentType.JSON)
@@ -32,16 +31,7 @@ public class OrderClient {
                 .then();
     }
 
-    // 3. Получить все заказы системы (GET /api/orders/all)
-    public ValidatableResponse getAllOrders() {
-        return given()
-                .contentType(ContentType.JSON)
-                .when()
-                .get(BASE_URI + "/orders/all")
-                .then();
-    }
-
-    // 4. Получить заказы конкретного пользователя (GET /api/orders)
+    // 3. Получить заказы конкретного пользователя (GET /api/orders)
     public ValidatableResponse getUserOrders(String accessToken) {
         return given()
                 .header("Authorization", accessToken)
@@ -51,11 +41,12 @@ public class OrderClient {
                 .then();
     }
 
+    // 4. Получить все ингредиенты системы (GET /api/ingredients)
     public ValidatableResponse getIngredients() {
         return given()
-                .header("Content-type", "application/json")
-                .get("https://stellarburgers.education-services.ru/api") // или URL из вашей константы
+                .contentType(ContentType.JSON) // Используем перечисление для одинакового стиля
+                .when()
+                .get(BASE_URI + "/ingredients") // ИСПРАВЛЕНО: добавлен путь /ingredients
                 .then();
     }
-
 }

@@ -16,6 +16,13 @@ public class UserClient {
     // Полный базовый URL с префиксом /api, чтобы эндпоинты склеивались корректно
     private static final String BASE_URI = "https://stellarburgers.education-services.ru/api";
 
+    private String formatToken(String token) {
+        if (token != null && !token.startsWith("Bearer ")) {
+            return "Bearer " + token;
+        }
+        return token;
+    }
+
     // 1. Создание пользователя (POST /api/auth/register)
     public ValidatableResponse register(User user) {
         return given()
@@ -36,7 +43,7 @@ public class UserClient {
                 .then();
     }
 
-    // 3. Восстановление пароля — Шаг 1: Запрос кода на Email (POST /api/password-reset)
+    // 3. Восстановление пароля — Запрос кода (POST /api/password-reset)
     public ValidatableResponse forgotPassword(String email) {
         return given()
                 .contentType(ContentType.JSON)
@@ -46,7 +53,7 @@ public class UserClient {
                 .then();
     }
 
-    // 4. Восстановление пароля — Шаг 2: Ввод нового пароля и токена (POST /api/password-reset/reset)
+    // 4. Восстановление пароля — Ввод нового пароля (POST /api/password-reset/reset)
     public ValidatableResponse resetPassword(PasswordReset passwordReset) {
         return given()
                 .contentType(ContentType.JSON)
@@ -79,28 +86,28 @@ public class UserClient {
     // 7. Получение информации о пользователе (GET /api/auth/user)
     public ValidatableResponse getUserData(String accessToken) {
         return given()
-                .header("Authorization", accessToken)
+                .header("Authorization", formatToken(accessToken)) // Защита токена
                 .contentType(ContentType.JSON)
                 .when()
-                .get(BASE_URI + "/auth/user") // Исправлено строго на GET согласно документации
+                .get(BASE_URI + "/auth/user")
                 .then();
     }
 
     // 8. Изменение информации о пользователе (PATCH /api/auth/user)
     public ValidatableResponse updateUserData(User user, String accessToken) {
         return given()
-                .header("Authorization", accessToken)
+                .header("Authorization", formatToken(accessToken)) // Защита токена
                 .contentType(ContentType.JSON)
                 .body(user)
                 .when()
-                .patch(BASE_URI + "/auth/user") // Исправлено строго на PATCH согласно документации
+                .patch(BASE_URI + "/auth/user")
                 .then();
     }
 
     // 9. Удаление пользователя (DELETE /api/auth/user)
     public ValidatableResponse delete(String accessToken) {
         return given()
-                .header("Authorization", accessToken)
+                .header("Authorization", formatToken(accessToken)) // Защита токена
                 .contentType(ContentType.JSON)
                 .when()
                 .delete(BASE_URI + "/auth/user")

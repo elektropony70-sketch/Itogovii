@@ -6,6 +6,10 @@ public class Order {
 
     private List<String> ingredients;
 
+    // Пустой конструктор (поможет отправить пустой JSON или десериализовать ответ)
+    public Order() {
+    }
+
     // Конструктор со списком ингредиентов
     public Order(List<String> ingredients) {
         this.ingredients = ingredients;
@@ -19,4 +23,5 @@ public class Order {
     public void setIngredients(List<String> ingredients) {
         this.ingredients = ingredients;
     }
+
 }
