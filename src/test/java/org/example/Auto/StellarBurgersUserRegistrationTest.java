@@ -25,11 +25,10 @@ public class StellarBurgersUserRegistrationTest extends BaseTest {
                 .body("accessToken", notNullValue())
                 .body("refreshToken", notNullValue());
 
-        // Переменная accessToken унаследована из BaseTest, tearDown сработает сам
         accessToken = response.extract().path("accessToken");
     }
 
-    // 2. СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ, КОТОРЫЙ УЖЕ ЗАРЕГИСТРИРОВАН
+    // 2 СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ ЗАРЕГЕСТРИРОВАНОГО
     @Test
     public void testCreateExistingUserThrowsError() {
         String uniqueEmail = "user_" + System.currentTimeMillis() + "@yandex.ru";
@@ -37,7 +36,7 @@ public class StellarBurgersUserRegistrationTest extends BaseTest {
         ValidatableResponse firstResponse = userClient.register(firstUser);
         accessToken = firstResponse.extract().path("accessToken");
 
-        // Пытаемся зарегистрировать точно такого же пользователя второй раз
+
         User duplicateUser = new User(uniqueEmail, User.DEFAULT_PASSWORD, User.DEFAULT_NAME);
         userClient.register(duplicateUser)
                 .statusCode(403)
@@ -45,10 +44,9 @@ public class StellarBurgersUserRegistrationTest extends BaseTest {
                 .body("message", equalTo("User already exists"));
     }
 
-    // 3. СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ БЕЗ ОБЯЗАТЕЛЬНОГО ПОЛЯ
+    // 3 СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ БЕЗ ОБЯЗАТЕЛЬНОГО ПОЛЯ
     @Test
     public void testCreateUserWithoutEmailThrowsError() {
-        // Передаем пустую строку вместо email
         User userWithoutEmail = new User("", User.DEFAULT_PASSWORD, User.DEFAULT_NAME);
 
         userClient.register(userWithoutEmail)

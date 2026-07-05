@@ -17,25 +17,23 @@ public class StellarBurgersOrderTest extends BaseTest {
 
     @Before
     public void setUp() {
-        // 1. Регистрируем уникального пользователя через константы класса User
+        // 1 Регистрируем уникального пользователя
         String uniqueEmail = "order_user_" + System.currentTimeMillis() + "@yandex.ru";
         User user = new User(uniqueEmail, User.DEFAULT_PASSWORD, "OrderTester");
 
         ValidatableResponse response = userClient.register(user);
-        // Переменная accessToken унаследована из BaseTest
         accessToken = response.extract().path("accessToken");
 
-        // 2. ДИНАМИЧЕСКИ получаем только свежие ID ингредиентов через наш OrderClient
+        // 2 получаем ID ингредиентов
         List<String> allIds = orderClient.getIngredients()
                 .contentType(io.restassured.http.ContentType.JSON) // Защита от HTML-заглушек nginx
                 .extract()
                 .path("data._id");
 
-        // Берём первые два реально существующих ID ингредиента
         validIngredients = List.of(allIds.get(0), allIds.get(1));
     }
 
-    // 1. УСПЕШНОЕ СОЗДАНИЕ ЗАКАЗА С АВТОРИЗАЦИЕЙ И ИНГРЕДИЕНТАМИ
+    // 1 СОЗДАНИЕ ЗАКАЗА С АВТОРИЗАЦИЕЙ И ИНГРЕДИЕНТАМИ
     @Test
     public void testCreateOrderWithAuthAndIngredientsSuccess() {
         Order order = new Order(validIngredients);
@@ -47,7 +45,7 @@ public class StellarBurgersOrderTest extends BaseTest {
                 .body("order.number", notNullValue());
     }
 
-    // 2. СОЗДАНИЕ ЗАКАЗА БЕЗ АВТОРИЗАЦИИ (Особенность бэкенда: возвращает 200)
+    // 2 СОЗДАНИЕ ЗАКАЗА БЕЗ АВТОРИЗАЦИИ
     @Test
     public void testCreateOrderWithoutAuthSuccess() {
         Order order = new Order(validIngredients);
@@ -58,7 +56,7 @@ public class StellarBurgersOrderTest extends BaseTest {
                 .body("order.number", notNullValue());
     }
 
-    // 3. СОЗДАНИЕ ЗАКАЗА БЕЗ ИНГРЕДИЕНТОВ (400 Bad Request)
+    // 3 СОЗДАНИЕ ЗАКАЗА БЕЗ ИНГРЕДИЕНТОВ
     @Test
     public void testCreateOrderWithoutIngredientsThrowsError() {
         Order emptyOrder = new Order(List.of());
@@ -69,7 +67,7 @@ public class StellarBurgersOrderTest extends BaseTest {
                 .body("message", equalTo("Ingredient ids must be provided"));
     }
 
-    // 4. СОЗДАНИЕ ЗАКАЗА С НЕВЕРНЫМ ХЕШЕМ ИНГРЕДИЕНТА (500 Internal Server Error)
+    // 4 СОЗДАНИЕ ЗАКАЗА С НЕВЕРНЫМ ХЕШЕМ ИНГРЕДИЕНТА
     @Test
     public void testCreateOrderWithInvalidIngredientHashThrowsError() {
         Order invalidOrder = new Order(List.of("invalid_hash_12345"));

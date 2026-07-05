@@ -32,7 +32,7 @@ public class OrderClient {
     }
 
 
-    // 4 Все ингредиенты в системе (GET /api/ingredients)
+    // 3 Все ингредиенты в системе (GET /api/ingredients)
     public ValidatableResponse getIngredients() {
         return given()
                 .contentType(ContentType.JSON)

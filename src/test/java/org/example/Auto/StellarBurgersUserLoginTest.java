@@ -15,19 +15,16 @@ public class StellarBurgersUserLoginTest extends BaseTest {
 
     @Before
     public void setUp() {
-        // Регистрируем уникального пользователя перед каждым тестом авторизации
         email = "login_user_" + System.currentTimeMillis() + "@yandex.ru";
         User user = new User(email, User.DEFAULT_PASSWORD, "LoginTester");
 
         ValidatableResponse response = userClient.register(user);
-        // Переменная accessToken унаследована из BaseTest — зачистка сработает автоматически
         accessToken = response.extract().path("accessToken");
     }
 
-    // 1. ВХОД ПОД СУЩЕСТВУЮЩИМ ПОЛЬЗОВАТЕЛЕМ
+    // 1 ВХОД ПОД СУЩЕСТВУЮЩИМ ПОЛЬЗОВАТЕЛЕМ
     @Test
     public void testLoginExistingUserSuccess() {
-        // Используем конструктор из 2-х параметров, пароль берем из констант User
         User loginCredentials = new User(email, User.DEFAULT_PASSWORD);
 
         userClient.login(loginCredentials)
@@ -37,10 +34,9 @@ public class StellarBurgersUserLoginTest extends BaseTest {
                 .body("refreshToken", notNullValue());
     }
 
-    // 2. ВХОД С НЕВЕРНЫМ ПАРОЛЕМ
+    // 2 ВХОД С НЕВЕРНЫМ ПАРОЛЕМ
     @Test
     public void testLoginWithInvalidCredentialsThrowsError() {
-        // Передаем заведомо неверный пароль
         User wrongCredentials = new User(email, "wrong_password_xyz");
 
         userClient.login(wrongCredentials)
