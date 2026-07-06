@@ -1,48 +1,42 @@
 package org.example.UI;
 
-
 import com.codeborne.selenide.Selenide;
-
-import org.example.UI.MainPage;
+import org.example.sorce.UI.MainPage;
 import org.junit.Test;
-
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertTrue;
 
-
-public class StellarBurgersConstructorUiTest extends org.example.UI.BaseUiTest {
+@RunWith(Parameterized.class)
+public class StellarBurgersConstructorUiTest extends BaseUiTest {
 
     public StellarBurgersConstructorUiTest(String browserType) {
         super(browserType);
     }
 
-
     @Test
     public void testSwitchToSaucesTab() {
-        Selenide.open(MainPage.URL);
-        MainPage mainPage = new MainPage();
+        MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
 
         mainPage.clickSaucesTab();
-        assertTrue("Вкладка 'Соусы' не стала активной", mainPage.isSaucesTabActive());
+        assertTrue("Вкладка 'Соусы' не стала активной", mainPage.isTabActive("Соусы"));
     }
 
     @Test
     public void testSwitchToFillingsTab() {
-        Selenide.open(MainPage.URL);
-        MainPage mainPage = new MainPage();
+        MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
 
         mainPage.clickFillingsTab();
-        assertTrue("Вкладка 'Начинки' не стала активной", mainPage.isFillingsTabActive());
+        assertTrue("Вкладка 'Начинки' не стала активной", mainPage.isTabActive("Начинки"));
     }
 
     @Test
     public void testSwitchToBunsTab() {
-        Selenide.open(MainPage.URL);
-        MainPage mainPage = new MainPage();
+        MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
 
-        // Сначала переключаемся на соусы, чтобы сбросить дефолтный фокус с булок
         mainPage.clickSaucesTab();
         mainPage.clickBunsTab();
-        assertTrue("Вкладка 'Булки' не стала активной", mainPage.isBunsTabActive());
+        assertTrue("Вкладка 'Булки' не стала активной", mainPage.isTabActive("Булки"));
     }
 }

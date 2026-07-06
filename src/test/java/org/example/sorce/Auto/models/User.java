@@ -1,4 +1,4 @@
-package org.example.Auto.models;
+package org.example.sorce.Auto.models;
 
 public class User {
 
@@ -15,7 +15,7 @@ public class User {
         this.name = name;
     }
 
-    // Конструктор без имени (может пригодиться для тестов авторизации)
+    // Конструктор без имени
     public User(String email, String password) {
         this.email = email;
         this.password = password;

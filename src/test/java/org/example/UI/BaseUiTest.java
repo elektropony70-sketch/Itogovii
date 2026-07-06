@@ -3,65 +3,76 @@ package org.example.UI;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.WebDriverRunner;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import io.restassured.response.ValidatableResponse;
+import org.example.sorce.Auto.client.UserClient;
+import org.example.sorce.Auto.models.User;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.openqa.selenium.chrome.ChromeOptions;
 
-
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.UUID;
 
-// Объявляем параметризацию на уровне базового класса, чтобы её наследовал каждый UI-тест
-@RunWith(Parameterized.class)
 public class BaseUiTest {
 
+    protected final UserClient userClient = new UserClient();
     protected final String browserType;
+    protected String accessToken;
 
-
-    // Конструктор принимает текущий браузер из параметров JUnit
     public BaseUiTest(String browserType) {
         this.browserType = browserType;
     }
 
-    // Параметры для поочередного запуска тестов
     @Parameterized.Parameters(name = "Браузер для теста: {0}")
     public static Collection<Object[]> getBrowsers() {
         return Arrays.asList(new Object[][] {
-                {"chrome"}, // Первый круг
-                {"yandex"}  // Второй круг
+                {"chrome"},
+                {"yandex"}
         });
+    }
+
+    protected User createAndRegisterUniqueUser() {
+        String cleanId = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+        String uniqueEmail = "user_" + cleanId + "@yandex.ru";
+        String uniquePassword = "burgerpass" + cleanId;
+        String uniqueName = "Alex_" + cleanId;
+
+        User testUser = new User(uniqueEmail, uniquePassword, uniqueName);
+        ValidatableResponse response = userClient.register(testUser);
+
+        if (response != null) {
+            this.accessToken = response.extract().path("accessToken");
+        }
+        return testUser;
     }
 
     @Before
     public void setUp() {
-        Configuration.browser = "chrome"; // Оба браузера работают на Chromium-движке
+        Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080";
 
-        org.openqa.selenium.chrome.ChromeOptions options = new org.openqa.selenium.chrome.ChromeOptions();
+        ChromeOptions options = new ChromeOptions();
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--remote-allow-origins=*");
 
         if ("yandex".equals(browserType)) {
-
             String userHome = System.getProperty("user.home");
-            String yandexBinaryPath = userHome + "\\AppData\\Local\\Yandex\\YandexBrowser\\Application\\browser.exe";
+            String s = File.separator;
+            String yandexBinaryPath = userHome + s + "AppData" + s + "Local" + s + "Yandex" + s + "YandexBrowser" + s + "Application" + s + "browser.exe";
 
-            java.io.File file = new java.io.File(yandexBinaryPath);
+            File file = new File(yandexBinaryPath);
             if (!file.exists()) {
-                yandexBinaryPath = "C:\\Program Files\\Yandex\\YandexBrowser\\Application\\browser.exe";
+                yandexBinaryPath = "C:" + s + "Program Files" + s + "Yandex" + s + "YandexBrowser" + s + "Application" + s + "browser.exe";
             }
-            options.setBinary(yandexBinaryPath); // Указываем открывать Яндекс
 
-            WebDriverManager.chromiumdriver().driverVersion("146.0.7680.0").setup();
-
-            System.out.println("--- ЗАПУСК ПРОГОНА В ЯНДЕКС.БРАУЗЕРЕ ---");
+            options.setBinary(yandexBinaryPath);
+            WebDriverManager.chromedriver().driverVersion("148.0.7778.0").setup();
         } else {
-            // АВТОМАТИКА ДЛЯ CHROME: скачивает драйвер строго под ваш текущий Chrome 149
-            io.github.bonigarcia.wdm.WebDriverManager.chromedriver().setup();
-
-            System.out.println("--- ЗАПУСК ПРОГОНА В GOOGLE CHROME ---");
+            WebDriverManager.chromedriver().setup();
         }
 
         Configuration.browserCapabilities = options;
@@ -70,12 +81,12 @@ public class BaseUiTest {
     @After
     public void tearDown() {
         try {
-            // ВРЕМЕННО: задерживаем окно на 2 секунды, чтобы увидеть результат глазами
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            if (accessToken != null) {
+                userClient.delete(accessToken);
+            }
+        } finally {
+            accessToken = null;
+            WebDriverRunner.closeWebDriver();
         }
-
-        WebDriverRunner.closeWebDriver();
     }
 }

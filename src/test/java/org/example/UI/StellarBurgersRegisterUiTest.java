@@ -1,10 +1,14 @@
 package org.example.UI;
 
 import com.codeborne.selenide.Selenide;
-import org.junit.Before;
+import io.restassured.response.ValidatableResponse;
+import org.example.sorce.Auto.models.User;
+import org.example.sorce.UI.LoginPage;
+import org.example.sorce.UI.RegisterPage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -12,43 +16,42 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class StellarBurgersRegisterUiTest extends BaseUiTest {
 
-    // 2. Добавляем обязательный конструктор для связи с BaseUiTest
     public StellarBurgersRegisterUiTest(String browserType) {
         super(browserType);
     }
 
-    @Before
-    @Override
-    public void setUp() {
-        // Вызываем общую настройку окружения и браузеров из родительского класса
-        super.setUp();
-    }
-
-    //Успешная регистрация
     @Test
     public void testSuccessfulRegistration() {
+        String cleanId = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 6);
 
-        MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
-        mainPage.clickLoginButton();
+        String regName = "RegUser" + cleanId;
+        String newUiEmail = "ui_perfect_" + cleanId + "@yandex.ru";
+        String regPassword = "burgerpass" + cleanId;
 
         RegisterPage registerPage = Selenide.open(RegisterPage.URL, RegisterPage.class);
-        String uniqueEmail = "ui_user_" + System.currentTimeMillis() + "@yandex.ru";
+        registerPage.register(regName, newUiEmail, regPassword);
 
-        registerPage.register("UiTester", uniqueEmail, "password123");
-
-        // Инициализируем страницу логина через чистый конструктор Selenide
         LoginPage loginPage = new LoginPage();
         assertTrue("Не перешли на страницу логина после успешной регистрации", loginPage.isLoginHeaderVisible());
+
+        User userCredentials = new User(newUiEmail, regPassword, null);
+        ValidatableResponse response = userClient.login(userCredentials);
+
+        if (response != null && response.extract().statusCode() == 200) {
+            this.accessToken = response.extract().path("accessToken");
+        }
     }
 
     @Test
     public void testRegistrationWithShortPasswordThrowsError() {
-        RegisterPage registerPage = Selenide.open(RegisterPage.URL, RegisterPage.class);
-        String uniqueEmail = "ui_user_" + System.currentTimeMillis() + "@yandex.ru";
+        String cleanId = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+        String failEmail = "ui_fail_" + cleanId + "@yandex.ru";
+        String shortPassword = "123";
 
-        registerPage.register("UiTester", uniqueEmail, "12345"); // Пароль меньше 6 символов
+        RegisterPage registerPage = Selenide.open(RegisterPage.URL, RegisterPage.class);
+        registerPage.register("FailUser", failEmail, shortPassword);
 
         assertTrue("Сообщение об ошибке некорректного пароля не отображается", registerPage.isPasswordErrorVisible());
-        assertEquals("Некорректный пароль", registerPage.getPasswordErrorText());
+        assertEquals("Текст ошибки не совпадает с ТЗ", "Некорректный пароль", registerPage.getPasswordErrorText());
     }
 }

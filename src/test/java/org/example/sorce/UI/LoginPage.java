@@ -1,4 +1,4 @@
-package org.example.UI;
+package org.example.sorce.UI;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import static com.codeborne.selenide.Selenide.$;
 
 public class LoginPage {
+
     public static final String URL = "https://stellarburgers.education-services.ru/login";
 
     private final SelenideElement loginHeader = $(By.xpath("//h2[text()='Вход']"));
@@ -20,7 +21,6 @@ public class LoginPage {
     }
 
     public boolean isLoginHeaderVisible() {
-        // Умное ожидание Selenide: ждем появления заголовка до 4 секунд
         return loginHeader.shouldBe(Condition.visible).isDisplayed();
     }
 }

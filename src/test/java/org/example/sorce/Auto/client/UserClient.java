@@ -1,9 +1,8 @@
-package org.example.Auto.client;
+package org.example.sorce.Auto.client;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
-import org.example.Auto.models.LogoutRequest;
-import org.example.Auto.models.User;
+import org.example.sorce.Auto.models.User;
 
 
 

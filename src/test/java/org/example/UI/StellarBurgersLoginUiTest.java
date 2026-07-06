@@ -1,154 +1,90 @@
 package org.example.UI;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
-import org.example.Auto.client.UserClient;
-import org.example.Auto.models.User;
-import org.junit.After;
-import org.junit.Before;
+import org.example.sorce.Auto.models.User;
+import org.example.sorce.UI.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.openqa.selenium.By;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.codeborne.selenide.Selenide.$;
 
 @RunWith(Parameterized.class)
 public class StellarBurgersLoginUiTest extends BaseUiTest {
 
-    private final UserClient userClient = new UserClient();
-    private String accessToken;
-    private String email;
-    private final String password = "password123";
-
-    // Конструктор для передачи типа браузера в родительский класс
     public StellarBurgersLoginUiTest(String browserType) {
         super(browserType);
     }
 
-    @Before
-    @Override
-    public void setUp() {
-        // Сначала вызываем setUp из BaseUiTest, чтобы настроить нужный браузер (Chrome или Яндекс)
-        super.setUp();
-
-        // Затем создаем уникального пользователя через API для текущего прогона
-        email = "ui_login_" + System.currentTimeMillis() + "@yandex.ru";
-        User user = new User(email, password, "LoginUiTester");
-        accessToken = userClient.register(user).extract().path("accessToken");
-    }
-
-    @After
-    @Override
-    public void tearDown() {
-        // Сначала удаляем пользователя через API, чтобы не засорять базу данных
-        if (accessToken != null) {
-            userClient.delete(accessToken);
-        }
-        // Затем вызываем закрытие браузера из родительского класса
-        super.tearDown();
-    }
-
     @Test
     public void testLoginFromMainPageButton() {
-        // 1. Открываем главную страницу
+        User user = createAndRegisterUniqueUser();
+
         MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
         mainPage.clickLoginButton();
 
-        // 2. Вводим данные на странице логина
         LoginPage loginPage = new LoginPage();
-        loginPage.login(email, password);
+        loginPage.login(user.getEmail(), user.getPassword());
 
-        // 3. НОВЫЙ ШАГ: После успешного входа кликаем на кнопку «Личный кабинет» в шапке
+        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
         mainPage.clickPersonalAccountButton();
 
-        // 4. Инициализируем страницу личного кабинета
         AccountPage accountPage = new AccountPage();
-
-        // 5. ПРОВЕРКА ИНФОРМАЦИИ: Сверяем, что в профиле отображаются именно наши Имя и Email
-        assertEquals("Имя пользователя в Личном кабинете не совпадает",
-                "LoginUiTester", accountPage.getNameValue());
-
-        assertEquals("Email пользователя в Личном кабинете не совпадает",
-                email, accountPage.getLoginValue());
+        accountPage.verifyProfileData(user.getName(), user.getEmail());
     }
 
     @Test
     public void testLoginFromPersonalAccountButton() {
-        // 1. Открываем главную страницу
+        User user = createAndRegisterUniqueUser();
+
         MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
-
-        // 2. Кликаем по кнопке «Личный кабинет», чтобы перейти на страницу логина
         mainPage.clickPersonalAccountButton();
 
-        // 3. Авторизуемся в системе
         LoginPage loginPage = new LoginPage();
-        loginPage.login(email, password);
+        loginPage.login(user.getEmail(), user.getPassword());
 
-        // 4. После логина снова кликаем «Личный кабинет», чтобы попасть в профиль
+        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
         mainPage.clickPersonalAccountButton();
 
-        // 5. Инициализируем страницу профиля
         AccountPage accountPage = new AccountPage();
-
-        // 6. СВЕРКА ДАННЫХ: Проверяем, что залогинился именно наш пользователь
-        assertEquals("Имя пользователя в Личном кабинете не совпадает",
-                "LoginUiTester", accountPage.getNameValue());
-
-        assertEquals("Email пользователя в Личном кабинете не совпадает",
-                email, accountPage.getLoginValue());
+        accountPage.verifyProfileData(user.getName(), user.getEmail());
     }
 
     @Test
     public void testLoginFromRegisterPageFormButton() {
-        // 1. Открываем страницу регистрации
-        RegisterPage registerPage = Selenide.open(RegisterPage.URL, RegisterPage.class);
+        User user = createAndRegisterUniqueUser();
 
-        // 2. Кликаем по ссылке «Войти» на форме регистрации
+        RegisterPage registerPage = Selenide.open(RegisterPage.URL, RegisterPage.class);
         registerPage.clickLoginLink();
 
-        // 3. Авторизуемся на открывшейся странице логина
         LoginPage loginPage = new LoginPage();
-        loginPage.login(email, password);
+        loginPage.login(user.getEmail(), user.getPassword());
 
-        // 4. Возвращаемся к главной странице, чтобы кликнуть на «Личный кабинет»
-        MainPage mainPage = new MainPage();
+        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
+        MainPage mainPage = Selenide.page(MainPage.class);
         mainPage.clickPersonalAccountButton();
 
-        // 5. Инициализируем страницу личного кабинета
         AccountPage accountPage = new AccountPage();
-
-        // 6. СВЕРКА ДАННЫХ: Проверяем профиль пользователя
-        assertEquals("Имя пользователя в Личном кабинете не совпадает",
-                "LoginUiTester", accountPage.getNameValue());
-
-        assertEquals("Email пользователя в Личном кабинете не совпадает",
-                email, accountPage.getLoginValue());
+        accountPage.verifyProfileData(user.getName(), user.getEmail());
     }
 
     @Test
     public void testLoginFromForgotPasswordPageFormButton() {
-        // 1. Открываем страницу восстановления пароля
-        ForgotPasswordPage forgotPage = Selenide.open(ForgotPasswordPage.URL, ForgotPasswordPage.class);
+        User user = createAndRegisterUniqueUser();
 
-        // 2. Кликаем по ссылке «Войти» под формой восстановления
+        ForgotPasswordPage forgotPage = Selenide.open(ForgotPasswordPage.URL, ForgotPasswordPage.class);
         forgotPage.clickLoginLink();
 
-        // 3. Авторизуемся на открывшейся странице логина
         LoginPage loginPage = new LoginPage();
-        loginPage.login(email, password);
+        loginPage.login(user.getEmail(), user.getPassword());
 
-        // 4. Используем объект главной страницы, чтобы перейти в Личный кабинет
-        MainPage mainPage = new MainPage();
+        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
+        MainPage mainPage = Selenide.page(MainPage.class);
         mainPage.clickPersonalAccountButton();
 
-        // 5. Инициализируем страницу личного кабинета
         AccountPage accountPage = new AccountPage();
-
-        // 6. СВЕРКА ДАННЫХ: Проверяем, что в профиле отображаются нужные Имя и Email
-        assertEquals("Имя пользователя в Личном кабинете не совпадает",
-                "LoginUiTester", accountPage.getNameValue());
-
-        assertEquals("Email пользователя в Личном кабинете не совпадает",
-                email, accountPage.getLoginValue());
+        accountPage.verifyProfileData(user.getName(), user.getEmail());
     }
 }
