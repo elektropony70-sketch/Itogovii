@@ -1,6 +1,6 @@
-package org.example.Auto;
+package org.example.auto;
 
-import org.example.Auto.client.UserClient;
+import org.example.auto.client.UserClient;
 import org.junit.After;
 
 public class BaseTest {

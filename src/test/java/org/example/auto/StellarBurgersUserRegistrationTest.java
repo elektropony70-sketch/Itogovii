@@ -1,7 +1,7 @@
-package org.example.Auto;
+package org.example.auto;
 
 import io.restassured.response.ValidatableResponse;
-import org.example.Auto.models.User;
+import org.example.auto.models.User;
 import org.junit.Test;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.equalTo;

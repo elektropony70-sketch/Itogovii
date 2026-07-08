@@ -1,9 +1,7 @@
-package org.example.Auto;
+package org.example.auto;
 
 import io.restassured.response.ValidatableResponse;
-import org.example.Auto.client.UserClient;
-import org.example.Auto.models.User;
-import org.junit.After;
+import org.example.auto.models.User;
 import org.junit.Before;
 import org.junit.Test;
 

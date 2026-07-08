@@ -1,4 +1,4 @@
-package org.example.Auto.models;
+package org.example.auto.models;
 
 import java.util.ArrayList;
 import java.util.List;

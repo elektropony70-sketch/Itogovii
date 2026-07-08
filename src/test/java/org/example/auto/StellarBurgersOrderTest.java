@@ -1,9 +1,9 @@
-package org.example.Auto;
+package org.example.auto;
 
 import io.restassured.response.ValidatableResponse;
-import org.example.Auto.client.OrderClient;
-import org.example.Auto.models.Order;
-import org.example.Auto.models.User;
+import org.example.auto.client.OrderClient;
+import org.example.auto.models.Order;
+import org.example.auto.models.User;
 import org.junit.Before;
 import org.junit.Test;
 import java.util.List;

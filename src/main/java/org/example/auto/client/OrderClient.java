@@ -1,10 +1,10 @@
-package org.example.Auto.client;
+package org.example.auto.client;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
-import org.example.Auto.models.Order;
+import org.example.auto.models.Order;
 
 import io.qameta.allure.Step;
 
