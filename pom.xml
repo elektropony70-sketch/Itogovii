@@ -13,10 +13,13 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+
         <junit.version>4.13.2</junit.version>
         <rest-assured.version>5.3.1</rest-assured.version>
-        <allure.version>2.24.0</allure.version>
+        <allure.version>2.25.0</allure.version>
         <aspectj.version>1.9.20.1</aspectj.version>
+
+
     </properties>
 
     <dependencyManagement>
@@ -39,6 +42,12 @@
             <version>3.12.4</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit5</artifactId>
+            <version>${allure.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- JUnit 4 -->
         <dependency>
@@ -48,28 +57,26 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Rest Assured (Главная библиотека для API тестов) -->
+        <!-- Rest Assured -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>${rest-assured.version}</version>
         </dependency>
 
-        <!-- Allure с JUnit 4 -->
+        <!-- УБРАЛИ scope ТУТ: Allure с JUnit 4 (чтобы @Step был виден в src/main/java) -->
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-junit4</artifactId>
-            <scope>test</scope>
         </dependency>
 
-        <!-- Allure с Rest Assured (Чтобы запросы и ответы автоматом шли в отчет) -->
+        <!-- УБРАЛИ scope ТУТ: Allure с Rest Assured -->
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-rest-assured</artifactId>
-            <scope>test</scope>
         </dependency>
 
-        <!-- Jackson Databind (Для сериализации Java-моделей Order и User в JSON) -->
+        <!-- Jackson Databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

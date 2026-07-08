@@ -9,7 +9,7 @@ public class BaseTest {
 
     @After
     public void tearDown() {
-        // Если в процессе теста был получен токен — удаляем пользователя
+
         if (accessToken != null) {
             userClient.delete(accessToken);
         }

@@ -1,10 +1,12 @@
 package org.example.Auto.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
 
-    private List<String> ingredients;
+
+    private List<String> ingredients = new ArrayList<>();
 
     public Order() {
     }
@@ -20,5 +22,4 @@ public class Order {
     public void setIngredients(List<String> ingredients) {
         this.ingredients = ingredients;
     }
-
 }

@@ -15,13 +15,11 @@ public class User {
         this.name = name;
     }
 
-    // Конструктор без имени (может пригодиться для тестов авторизации)
     public User(String email, String password) {
         this.email = email;
         this.password = password;
     }
 
-    // Геттеры и сеттеры
     public String getEmail() {
         return email;
     }
