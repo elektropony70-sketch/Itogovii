@@ -5,10 +5,17 @@ import org.example.sorce.ruto.User;
 import org.example.sorce.UI.*;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static com.codeborne.selenide.Selenide.open;
 
+@RunWith(Parameterized.class)
 public class StellarBurgersLoginUiTest extends BaseUiTest {
+
+    public StellarBurgersLoginUiTest(BaseUiTest.Browser browser) {
+        super(browser);
+    }
 
     @Test
     public void testLoginFromMainPageButton() {

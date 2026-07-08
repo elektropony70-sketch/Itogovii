@@ -19,10 +19,27 @@ import java.util.UUID;
 
 public class BaseUiTest {
 
+    public enum Browser {
+        CHROME, YANDEX
+    }
+
     protected final UserClient userClient = new UserClient();
+    protected final Browser browser;
     protected String accessToken;
 
-    // Убрали конструктор и аннотацию @Parameterized.Parameters
+
+    public BaseUiTest(Browser browser) {
+        this.browser = browser;
+    }
+
+    @Parameterized.Parameters(name = "Браузер для теста: {0}")
+    public static Collection<Object[]> getBrowsers() {
+        return Arrays.asList(new Object[][] {
+                {Browser.CHROME},
+                {Browser.YANDEX}
+        });
+    }
+
 
     @Step("Создание и регистрация уникального пользователя через API")
     protected User createAndRegisterUniqueUser() {
@@ -45,17 +62,16 @@ public class BaseUiTest {
 
     @Before
     public void setUp() {
-        Configuration.browserSize = "1920x1080";
 
-        // Читаем браузер из системной переменной. Если не задан — берем chrome
-        String browserType = System.getProperty("browser", "chrome").toLowerCase();
+        Configuration.browser = "chrome";
+        Configuration.browserSize = "1920x1080";
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--remote-allow-origins=*");
 
-        if ("yandex".equals(browserType)) {
+        if (Browser.YANDEX.equals(browser)) {
             String userHome = System.getProperty("user.home");
             String s = File.separator;
             String yandexBinaryPath = userHome + s + "AppData" + s + "Local" + s + "Yandex" + s + "YandexBrowser" + s + "Application" + s + "browser.exe";
@@ -66,11 +82,10 @@ public class BaseUiTest {
             }
 
             options.setBinary(yandexBinaryPath);
-            WebDriverManager.chromedriver().capabilities(options).setup();
-            Configuration.browser = "chrome"; // Селенид работает с Яндексом через хром-драйвер
+
+            WebDriverManager.chromedriver().driverVersion("148.0.7778.0").setup();
         } else {
             WebDriverManager.chromedriver().setup();
-            Configuration.browser = "chrome";
         }
 
         Configuration.browserCapabilities = options;
@@ -83,7 +98,7 @@ public class BaseUiTest {
                 userClient.delete(accessToken);
             }
         } catch (Exception e) {
-            System.err.println("Не удалось удалить пользователя после теста: " + e.getMessage());
+            System.err.println("Не удалось удалить пользователя: " + e.getMessage());
         } finally {
             accessToken = null;
             WebDriverRunner.closeWebDriver();

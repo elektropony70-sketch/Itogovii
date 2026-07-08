@@ -6,12 +6,19 @@ import org.example.sorce.ruto.User;
 import org.example.sorce.UI.LoginPage;
 import org.example.sorce.UI.RegisterPage;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static com.codeborne.selenide.Selenide.open;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(Parameterized.class)
 public class StellarBurgersRegisterUiTest extends BaseUiTest {
+
+    public StellarBurgersRegisterUiTest(BaseUiTest.Browser browser) {
+        super(browser);
+    }
 
     @Test
     public void testSuccessfulRegistration() {
