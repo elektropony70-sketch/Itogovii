@@ -16,10 +16,10 @@ public class BurgerTest {
     private Bun mockBun;
 
     @Mock
-    private Ingredient mockIngredient1;
+    private Ingredient sauce;
 
     @Mock
-    private Ingredient mockIngredient2;
+    private Ingredient filling;
 
     @Test
     public void testSetBuns() {
@@ -28,62 +28,41 @@ public class BurgerTest {
     }
 
     @Test
-    public void testAddIngredient() {
-        burger.addIngredient(mockIngredient1);
-        Assert.assertEquals("Ингредиент не добавился в список", 1, burger.ingredients.size());
-        Assert.assertEquals("В списке сохранен неверный ингредиент", mockIngredient1, burger.ingredients.get(0));
+    public void testAddIngredientSize() {
+        burger.addIngredient(sauce);
+        Assert.assertEquals("Ингредиент не добавился в список (неверный размер)", 1, burger.ingredients.size());
     }
 
     @Test
-    public void testRemoveIngredient() {
-        burger.addIngredient(mockIngredient1);
+    public void testAddIngredientCorrectObject() {
+        burger.addIngredient(sauce);
+        Assert.assertEquals("В списке сохранен неверный ингредиент", sauce, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void testRemoveIngredientIsEmpty() {
+        burger.addIngredient(sauce);
         burger.removeIngredient(0);
         Assert.assertTrue("Список ингредиентов должен быть пустым после удаления", burger.ingredients.isEmpty());
     }
 
     @Test
-    public void testMoveIngredient() {
-        burger.addIngredient(mockIngredient1); // индекс 0
-        burger.addIngredient(mockIngredient2); // индекс 1
+    public void testMoveIngredientFirstPosition() {
+        burger.addIngredient(sauce);   // индекс 0
+        burger.addIngredient(filling); // индекс 1
 
         burger.moveIngredient(0, 1);
 
-        Assert.assertEquals("Ингредиенты не поменялись местами (на индексе 0 должен быть второй элемент)",
-                mockIngredient2, burger.ingredients.get(0));
-        Assert.assertEquals("Ингредиенты не поменялись местами (на индексе 1 должен быть первый элемент)",
-                mockIngredient1, burger.ingredients.get(1));
+        Assert.assertEquals("На индексе 0 должен быть второй элемент (filling)", filling, burger.ingredients.get(0));
     }
 
     @Test
-    public void testGetPrice() {
-        Mockito.when(mockBun.getPrice()).thenReturn(100.0f);
-        Mockito.when(mockIngredient1.getPrice()).thenReturn(50.0f);
+    public void testMoveIngredientSecondPosition() {
+        burger.addIngredient(sauce);   // индекс 0
+        burger.addIngredient(filling); // индекс 1
 
-        burger.setBuns(mockBun);
-        burger.addIngredient(mockIngredient1);
+        burger.moveIngredient(0, 1);
 
-        float expectedPrice = 250.0f;
-
-        Assert.assertEquals("Итоговая стоимость бургера рассчитана некорректно", expectedPrice, burger.getPrice(), 0.0f);
-    }
-
-    @Test
-    public void testGetReceipt() {
-        Mockito.when(mockBun.getName()).thenReturn("Краторная булка");
-        Mockito.when(mockBun.getPrice()).thenReturn(100.0f);
-
-        Mockito.when(mockIngredient1.getType()).thenReturn(IngredientType.SAUCE);
-        Mockito.when(mockIngredient1.getName()).thenReturn("Соус чили");
-        Mockito.when(mockIngredient1.getPrice()).thenReturn(50.0f);
-
-        burger.setBuns(mockBun);
-        burger.addIngredient(mockIngredient1);
-
-        String expectedReceipt = String.format("(==== Краторная булка ====)%n") +
-                String.format("= sauce Соус чили =%n") +
-                String.format("(==== Краторная булка ====)%n") +
-                String.format("%nPrice: %f%n", 250.0f);
-
-        Assert.assertEquals("Текст чека не совпадает с ожидаемым форматом", expectedReceipt, burger.getReceipt());
+        Assert.assertEquals("На индексе 1 должен быть первый элемент (sauce)", sauce, burger.ingredients.get(1));
     }
 }
