@@ -3,9 +3,10 @@ package org.example.UI;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.WebDriverRunner;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
-import org.example.sorce.Auto.client.UserClient;
-import org.example.sorce.Auto.models.User;
+import org.example.sorce.ruto.User;
+import org.example.sorce.ruto.UserClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.Parameterized;
@@ -19,21 +20,11 @@ import java.util.UUID;
 public class BaseUiTest {
 
     protected final UserClient userClient = new UserClient();
-    protected final String browserType;
     protected String accessToken;
 
-    public BaseUiTest(String browserType) {
-        this.browserType = browserType;
-    }
+    // Убрали конструктор и аннотацию @Parameterized.Parameters
 
-    @Parameterized.Parameters(name = "Браузер для теста: {0}")
-    public static Collection<Object[]> getBrowsers() {
-        return Arrays.asList(new Object[][] {
-                {"chrome"},
-                {"yandex"}
-        });
-    }
-
+    @Step("Создание и регистрация уникального пользователя через API")
     protected User createAndRegisterUniqueUser() {
         String cleanId = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
         String uniqueEmail = "user_" + cleanId + "@yandex.ru";
@@ -44,15 +35,20 @@ public class BaseUiTest {
         ValidatableResponse response = userClient.register(testUser);
 
         if (response != null) {
-            this.accessToken = response.extract().path("accessToken");
+            String rawToken = response.extract().path("accessToken");
+            if (rawToken != null) {
+                this.accessToken = rawToken.replace("Bearer ", "").trim();
+            }
         }
         return testUser;
     }
 
     @Before
     public void setUp() {
-        Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080";
+
+        // Читаем браузер из системной переменной. Если не задан — берем chrome
+        String browserType = System.getProperty("browser", "chrome").toLowerCase();
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--no-sandbox");
@@ -70,9 +66,11 @@ public class BaseUiTest {
             }
 
             options.setBinary(yandexBinaryPath);
-            WebDriverManager.chromedriver().driverVersion("148.0.7778.0").setup();
+            WebDriverManager.chromedriver().capabilities(options).setup();
+            Configuration.browser = "chrome"; // Селенид работает с Яндексом через хром-драйвер
         } else {
             WebDriverManager.chromedriver().setup();
+            Configuration.browser = "chrome";
         }
 
         Configuration.browserCapabilities = options;
@@ -84,6 +82,8 @@ public class BaseUiTest {
             if (accessToken != null) {
                 userClient.delete(accessToken);
             }
+        } catch (Exception e) {
+            System.err.println("Не удалось удалить пользователя после теста: " + e.getMessage());
         } finally {
             accessToken = null;
             WebDriverRunner.closeWebDriver();

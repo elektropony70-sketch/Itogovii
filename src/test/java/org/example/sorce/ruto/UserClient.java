@@ -1,9 +1,10 @@
-package org.example.sorce.Auto.client;
+package org.example.sorce.ruto;
 
+import io.qameta.allure.Step;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
-import org.example.sorce.Auto.models.User;
-
+import io.restassured.specification.RequestSpecification;
 
 
 import static io.restassured.RestAssured.given;
@@ -11,6 +12,14 @@ import static io.restassured.RestAssured.given;
 public class UserClient {
 
     private static final String BASE_URI = "https://stellarburgers.education-services.ru/api";
+    private final RequestSpecification baseSpec;
+
+    public UserClient() {
+        this.baseSpec = new RequestSpecBuilder()
+                .setBaseUri(BASE_URI)
+                .setContentType(ContentType.JSON)
+                .build();
+    }
 
     private String formatToken(String token) {
         if (token != null && !token.startsWith("Bearer ")) {
@@ -20,32 +29,35 @@ public class UserClient {
     }
 
     // 1 Создание пользователя (POST /api/auth/register)
+    @Step("Регистрация нового пользователя")
     public ValidatableResponse register(User user) {
         return given()
-                .contentType(ContentType.JSON)
+                .spec(baseSpec)
                 .body(user)
                 .when()
-                .post(BASE_URI + "/auth/register")
+                .post("/auth/register")
                 .then();
     }
 
     // 2 Логин пользователя (POST /api/auth/login)
+    @Step("Авторизация (логин) пользователя")
     public ValidatableResponse login(User user) {
         return given()
-                .contentType(ContentType.JSON)
+                .spec(baseSpec)
                 .body(user)
                 .when()
-                .post(BASE_URI + "/auth/login")
+                .post("/auth/login")
                 .then();
     }
 
     // 3 Удаление пользователя (DELETE /api/auth/user)
+    @Step("Удаление пользователя по токену")
     public ValidatableResponse delete(String accessToken) {
         return given()
-                .header("Authorization", formatToken(accessToken)) // Защита токена
-                .contentType(ContentType.JSON)
+                .spec(baseSpec)
+                .header("Authorization", formatToken(accessToken))
                 .when()
-                .delete(BASE_URI + "/auth/user")
+                .delete("/auth/user")
                 .then();
     }
 }

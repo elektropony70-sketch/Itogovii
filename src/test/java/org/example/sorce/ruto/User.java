@@ -1,4 +1,4 @@
-package org.example.sorce.Auto.models;
+package org.example.sorce.ruto;
 
 public class User {
 

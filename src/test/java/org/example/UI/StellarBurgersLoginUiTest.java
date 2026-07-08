@@ -1,90 +1,90 @@
 package org.example.UI;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
-import org.example.sorce.Auto.models.User;
+import org.example.sorce.ruto.User;
 import org.example.sorce.UI.*;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.openqa.selenium.By;
 
-import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.open;
 
-@RunWith(Parameterized.class)
 public class StellarBurgersLoginUiTest extends BaseUiTest {
-
-    public StellarBurgersLoginUiTest(String browserType) {
-        super(browserType);
-    }
 
     @Test
     public void testLoginFromMainPageButton() {
         User user = createAndRegisterUniqueUser();
 
-        MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
+        MainPage mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickLoginButton();
 
-        LoginPage loginPage = new LoginPage();
+        LoginPage loginPage = Selenide.page(LoginPage.class);
         loginPage.login(user.getEmail(), user.getPassword());
 
-        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
+        loginPage.waitForLoginHeaderToDisappear();
+
         mainPage.clickPersonalAccountButton();
 
-        AccountPage accountPage = new AccountPage();
-        accountPage.verifyProfileData(user.getName(), user.getEmail());
+        AccountPage accountPage = Selenide.page(AccountPage.class);
+        Assert.assertEquals("Имя пользователя не совпадает", user.getName(), accountPage.getNameValue());
+        Assert.assertEquals("Email пользователя не совпадает", user.getEmail(), accountPage.getLoginValue());
     }
 
     @Test
     public void testLoginFromPersonalAccountButton() {
         User user = createAndRegisterUniqueUser();
 
-        MainPage mainPage = Selenide.open(MainPage.URL, MainPage.class);
+        MainPage mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickPersonalAccountButton();
 
-        LoginPage loginPage = new LoginPage();
+        LoginPage loginPage = Selenide.page(LoginPage.class);
         loginPage.login(user.getEmail(), user.getPassword());
 
-        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
+        loginPage.waitForLoginHeaderToDisappear();
+
         mainPage.clickPersonalAccountButton();
 
-        AccountPage accountPage = new AccountPage();
-        accountPage.verifyProfileData(user.getName(), user.getEmail());
+        AccountPage accountPage = Selenide.page(AccountPage.class);
+        Assert.assertEquals("Имя пользователя не совпадает", user.getName(), accountPage.getNameValue());
+        Assert.assertEquals("Email пользователя не совпадает", user.getEmail(), accountPage.getLoginValue());
     }
 
     @Test
     public void testLoginFromRegisterPageFormButton() {
         User user = createAndRegisterUniqueUser();
 
-        RegisterPage registerPage = Selenide.open(RegisterPage.URL, RegisterPage.class);
+        RegisterPage registerPage = open(RegisterPage.URL, RegisterPage.class);
         registerPage.clickLoginLink();
 
-        LoginPage loginPage = new LoginPage();
+        LoginPage loginPage = Selenide.page(LoginPage.class);
         loginPage.login(user.getEmail(), user.getPassword());
 
-        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
+        loginPage.waitForLoginHeaderToDisappear();
+
         MainPage mainPage = Selenide.page(MainPage.class);
         mainPage.clickPersonalAccountButton();
 
-        AccountPage accountPage = new AccountPage();
-        accountPage.verifyProfileData(user.getName(), user.getEmail());
+        AccountPage accountPage = Selenide.page(AccountPage.class);
+        Assert.assertEquals("Имя пользователя не совпадает", user.getName(), accountPage.getNameValue());
+        Assert.assertEquals("Email пользователя не совпадает", user.getEmail(), accountPage.getLoginValue());
     }
 
     @Test
     public void testLoginFromForgotPasswordPageFormButton() {
         User user = createAndRegisterUniqueUser();
 
-        ForgotPasswordPage forgotPage = Selenide.open(ForgotPasswordPage.URL, ForgotPasswordPage.class);
+        ForgotPasswordPage forgotPage = open(ForgotPasswordPage.URL, ForgotPasswordPage.class);
         forgotPage.clickLoginLink();
 
-        LoginPage loginPage = new LoginPage();
+        LoginPage loginPage = Selenide.page(LoginPage.class);
         loginPage.login(user.getEmail(), user.getPassword());
 
-        $(By.xpath("//h2[text()='Вход']")).shouldNotBe(Condition.visible);
+        loginPage.waitForLoginHeaderToDisappear();
+
         MainPage mainPage = Selenide.page(MainPage.class);
         mainPage.clickPersonalAccountButton();
 
-        AccountPage accountPage = new AccountPage();
-        accountPage.verifyProfileData(user.getName(), user.getEmail());
+        AccountPage accountPage = Selenide.page(AccountPage.class);
+        Assert.assertEquals("Имя пользователя не совпадает", user.getName(), accountPage.getNameValue());
+        Assert.assertEquals("Email пользователя не совпадает", user.getEmail(), accountPage.getLoginValue());
     }
 }
