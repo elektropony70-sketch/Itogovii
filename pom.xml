@@ -67,7 +67,7 @@
 
     <build>
         <plugins>
-            <!-- Surefire плагин с подключением AspectJ агента -->
+            <!-- Surefire плагин с подключением AspectJ -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
