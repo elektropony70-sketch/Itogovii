@@ -32,7 +32,7 @@ public class BaseUiTest {
         this.browser = browser;
     }
 
-    @Parameterized.Parameters(name = "Браузер для теста: {0}")
+    @Parameterized.Parameters
     public static Collection<Object[]> getBrowsers() {
         return Arrays.asList(new Object[][] {
                 {Browser.CHROME},
