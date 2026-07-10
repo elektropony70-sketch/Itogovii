@@ -1,0 +1,78 @@
+package org.example.auto;
+
+import io.restassured.response.ValidatableResponse;
+import org.example.auto.client.OrderClient;
+import org.example.auto.models.Order;
+import org.example.auto.models.User;
+import org.junit.Before;
+import org.junit.Test;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+
+public class StellarBurgersOrderTest extends BaseTest {
+
+    private final OrderClient orderClient = new OrderClient();
+    private List<String> validIngredients;
+
+    @Before
+    public void setUp() {
+        // 1 Регистрируем уникального пользователя
+        String uniqueEmail = "order_user_" + System.currentTimeMillis() + "@yandex.ru";
+        User user = new User(uniqueEmail, User.DEFAULT_PASSWORD, "OrderTester");
+
+        ValidatableResponse response = userClient.register(user);
+        accessToken = response.extract().path("accessToken");
+
+        // 2 получаем ID ингредиентов
+        List<String> allIds = orderClient.getIngredients()
+                .contentType(io.restassured.http.ContentType.JSON) // Защита от HTML-заглушек nginx
+                .extract()
+                .path("data._id");
+
+        validIngredients = List.of(allIds.get(0), allIds.get(1));
+    }
+
+    // 1 СОЗДАНИЕ ЗАКАЗА С АВТОРИЗАЦИЕЙ И ИНГРЕДИЕНТАМИ
+    @Test
+    public void testCreateOrderWithAuthAndIngredientsSuccess() {
+        Order order = new Order(validIngredients);
+
+        orderClient.createOrder(order, accessToken)
+                .statusCode(200)
+                .body("success", is(true))
+                .body("name", notNullValue())
+                .body("order.number", notNullValue());
+    }
+
+    // 2 СОЗДАНИЕ ЗАКАЗА БЕЗ АВТОРИЗАЦИИ
+    @Test
+    public void testCreateOrderWithoutAuthSuccess() {
+        Order order = new Order(validIngredients);
+
+        orderClient.createOrderWithoutAuth(order)
+                .statusCode(200)
+                .body("success", is(true))
+                .body("order.number", notNullValue());
+    }
+
+    // 3 СОЗДАНИЕ ЗАКАЗА БЕЗ ИНГРЕДИЕНТОВ
+    @Test
+    public void testCreateOrderWithoutIngredientsThrowsError() {
+        Order emptyOrder = new Order(List.of());
+
+        orderClient.createOrder(emptyOrder, accessToken)
+                .statusCode(400)
+                .body("success", is(false))
+                .body("message", equalTo("Ingredient ids must be provided"));
+    }
+
+    // 4 СОЗДАНИЕ ЗАКАЗА С НЕВЕРНЫМ ХЕШЕМ ИНГРЕДИЕНТА
+    @Test
+    public void testCreateOrderWithInvalidIngredientHashThrowsError() {
+        Order invalidOrder = new Order(List.of("invalid_hash_12345"));
+
+        orderClient.createOrder(invalidOrder, accessToken)
+                .statusCode(500);
+    }
+}
