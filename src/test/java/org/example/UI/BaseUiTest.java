@@ -41,7 +41,7 @@ public class BaseUiTest {
     }
 
 
-    @Step("Создание и регистрация уникального пользователя через API")
+    @Step
     protected User createAndRegisterUniqueUser() {
         String cleanId = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
         String uniqueEmail = "user_" + cleanId + "@yandex.ru";
